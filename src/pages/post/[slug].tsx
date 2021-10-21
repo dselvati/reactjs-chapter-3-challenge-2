@@ -13,9 +13,11 @@ import { RichText } from 'prismic-dom';
 
 import Prismic from '@prismicio/client'
 import { useEffect, useState } from 'react';
-
+import { Comments } from '../../components/Comments';
+import { ExitPreview } from '../../components/ExitPreview';
 interface Post {
   first_publication_date: string | null;
+  last_publication_date: string | null;
   data: {
     title: string;
     banner: {
@@ -33,9 +35,10 @@ interface Post {
 
 interface PostProps {
   post: Post;
+  preview: boolean;
 }
 
-export default function Post({ post }: PostProps) {
+export default function Post({ post, preview }: PostProps) {
   // TODO
 
   const [estimatedTime, setEstimatedTime] = useState<String>('')
@@ -75,9 +78,10 @@ export default function Post({ post }: PostProps) {
 
           <div className={styles.post}>
 
-            <div className={commonStyles.contentContainer}>
-              <h1>{post.data.title}</h1>
+            {/* <div className={commonStyles.contentContainer}> */}
+            <h1>{post.data.title}</h1>
 
+            <div className={styles.boxInfo}>
               <div className={styles.boxIcons}>
                 <div>
                   {/* <img src="/images/calendar.svg" alt="Autor" /> */}
@@ -99,26 +103,37 @@ export default function Post({ post }: PostProps) {
                   <span>{estimatedTime} min</span>
                 </div>
               </div>
-
-              <div>
-                {
-                  post.data.content.map(c => (
-                    <div key={c.heading} className={styles.content}>
-                      <h2>{c.heading}</h2>
-                      {
-                        c.body.map(b => (
-                          <div key={b.text}
-                            className={styles.bodyContent}
-                            dangerouslySetInnerHTML={{ __html: b.text }}
-                          />
-                        ))
-                      }
-                    </div>
-                  ))
-                }
-
-              </div>
+              <time>{
+                format(new Date(post.last_publication_date), "'* editado em' dd MMM yyyy', às' HH:mm", {
+                  locale: ptBR
+                })
+              }</time>
             </div>
+
+            <div>
+              {
+                post.data.content.map(c => (
+                  <div key={c.heading} className={styles.content}>
+                    <h2>{c.heading}</h2>
+                    {
+                      c.body.map(b => (
+                        <div key={b.text}
+                          className={styles.bodyContent}
+                          dangerouslySetInnerHTML={{ __html: b.text }}
+                        />
+                      ))
+                    }
+                  </div>
+                ))
+              }
+            </div>
+
+            <div>
+              <Comments />
+
+            </div>
+            <ExitPreview preview={preview} />
+            {/* </div> */}
           </div>
         </>
       }
@@ -154,24 +169,42 @@ export const getStaticPaths: GetStaticPaths = async () => {
   // TODO
 };
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps = async ({ params, preview = false, previewData }) => {
   const { slug } = params
 
   const prismic = getPrismicClient();
-  const response = await prismic.getByUID('posts', String(slug), {});
+  const response = await prismic.getByUID('posts', String(slug), {
+    ref: previewData?.ref ?? null,
+  });
+
+  const { id, uid, data, first_publication_date, last_publication_date } = response
+
+  const prevpost = await prismic.query([
+    Prismic.predicates.at('document.type', 'posts'
+    )], {
+    pageSize: 1, after: id, orderings: '[document.first_publication_date desc]'
+  })
+
+  const nextpost = await prismic.query([
+    Prismic.predicates.at('document.type', 'posts'
+    )], {
+    pageSize: 1, after: id, orderings: '[document.first_publication_date]'
+  })
 
   // TODO
-  //console.log(response)
-  const { uid, data, first_publication_date } = response
+  console.log(prevpost)
+  console.log(nextpost)
   const post = {
     uid,
     first_publication_date,
+    last_publication_date,
     data
   }
 
   return {
     props: {
-      post
+      post,
+      preview
     },
 
     redirect: 60 * 30
