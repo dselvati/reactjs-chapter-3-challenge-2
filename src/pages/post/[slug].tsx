@@ -15,6 +15,9 @@ import Prismic from '@prismicio/client'
 import { useEffect, useState } from 'react';
 import { Comments } from '../../components/Comments';
 import { ExitPreview } from '../../components/ExitPreview';
+
+import Link from 'next/link'
+
 interface Post {
   first_publication_date: string | null;
   last_publication_date: string | null;
@@ -129,6 +132,21 @@ export default function Post({ post, preview }: PostProps) {
             </div>
 
             <div>
+              <div className={styles.navigationPost}>
+                <Link href={`/post/`}>
+                  <a>
+                    <div>Left Menu</div>
+                  </a>
+                </Link>
+
+                <Link href={`/post/`}>
+                  <a>
+                    <div>Right Menu</div>
+                  </a>
+                </Link>
+              </div>
+
+
               <Comments />
 
             </div>
