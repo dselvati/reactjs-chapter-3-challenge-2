@@ -19,6 +19,7 @@ import { ExitPreview } from '../../components/ExitPreview';
 import Link from 'next/link'
 
 interface Post {
+  uid: string;
   first_publication_date: string | null;
   last_publication_date: string | null;
   data: {
@@ -36,12 +37,19 @@ interface Post {
   };
 }
 
+interface PostNeighbor {
+  uid: String;
+  title: String;
+}
+
 interface PostProps {
   post: Post;
   preview: boolean;
+  prevPost?: PostNeighbor;
+  nextPost?: PostNeighbor;
 }
 
-export default function Post({ post, preview }: PostProps) {
+export default function Post({ post, preview, prevPost, nextPost }: PostProps) {
   // TODO
 
   const [estimatedTime, setEstimatedTime] = useState<String>('')
@@ -131,23 +139,34 @@ export default function Post({ post, preview }: PostProps) {
               }
             </div>
 
+            <div className={styles.divisor} />
             <div>
-              <div className={styles.navigationPost}>
-                <Link href={`/post/`}>
-                  <a>
-                    <div>Left Menu</div>
-                  </a>
-                </Link>
+              <div className={prevPost ? styles.navigationPost : styles.navigationOnlyNextPost}>
+                {
+                  prevPost &&
+                  <Link href={`/post/${prevPost.uid}`}>
+                    <a>
+                      <span>{prevPost.title}</span>
+                      <span>Post anterior</span>
+                    </a>
+                  </Link>
+                }
 
-                <Link href={`/post/`}>
-                  <a>
-                    <div>Right Menu</div>
-                  </a>
-                </Link>
+
+                {
+                  nextPost &&
+                  <Link href={`/post/${nextPost.uid}`}>
+                    <a>
+                      <span>{nextPost.title}</span>
+                      <span>Próximo post</span>
+                    </a>
+                  </Link>
+                }
+
               </div>
 
 
-              <Comments />
+              <Comments commentNodeId={post.uid} />
 
             </div>
             <ExitPreview preview={preview} />
@@ -197,21 +216,6 @@ export const getStaticProps: GetStaticProps = async ({ params, preview = false, 
 
   const { id, uid, data, first_publication_date, last_publication_date } = response
 
-  const prevpost = await prismic.query([
-    Prismic.predicates.at('document.type', 'posts'
-    )], {
-    pageSize: 1, after: id, orderings: '[document.first_publication_date desc]'
-  })
-
-  const nextpost = await prismic.query([
-    Prismic.predicates.at('document.type', 'posts'
-    )], {
-    pageSize: 1, after: id, orderings: '[document.first_publication_date]'
-  })
-
-  // TODO
-  console.log(prevpost)
-  console.log(nextpost)
   const post = {
     uid,
     first_publication_date,
@@ -219,10 +223,47 @@ export const getStaticProps: GetStaticProps = async ({ params, preview = false, 
     data
   }
 
+  const responsePrevPost = await prismic.query([
+    Prismic.predicates.at('document.type', 'posts'
+    )], {
+    pageSize: 1, after: id, orderings: '[document.first_publication_date desc]'
+  })
+
+  const responseNextPost = await prismic.query([
+    Prismic.predicates.at('document.type', 'posts'
+    )], {
+    pageSize: 1, after: id, orderings: '[document.first_publication_date]'
+  })
+
+  // TODO
+  const [resultPrevPost] = responsePrevPost.results
+  const [resultNextPost] = responseNextPost.results
+
+
+
+  const prevPost = resultPrevPost ?
+    {
+      uid: resultPrevPost?.uid,
+      title: resultPrevPost?.data.title
+    }
+    : null
+
+  const nextPost = resultNextPost ?
+    {
+      uid: resultNextPost.uid,
+      title: resultNextPost.data.title
+    }
+    : null
+
+  // console.log(prevPost)
+  // console.log(nextPost)
+
   return {
     props: {
       post,
-      preview
+      preview,
+      prevPost,
+      nextPost
     },
 
     redirect: 60 * 30

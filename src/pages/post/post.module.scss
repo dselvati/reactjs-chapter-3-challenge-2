@@ -91,8 +91,62 @@
     }
 }
 
+.divisor {
+    margin: 4rem 0;
+    border: 0.25px solid #d7d7d73b;
+}
+
 .navigationPost {
+    padding: 0 0 5rem 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
+
+
+    a {
+        span {
+            display: block;
+            padding-bottom: 1rem;
+
+            transition: 0.2s color;
+
+            &:hover:first-child{
+                color: var(--pink-002)
+            }
+
+            & + span {
+                color: var(--pink-001)
+            }
+        }
+
+        & + a{
+            text-align: right;
+        }
+    }
+}
+
+.navigationOnlyNextPost {
+    padding: 0 0 5rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: right;
+
+
+    a {
+        span {
+            display: block;
+            padding-bottom: 1rem;
+            text-align: right;
+
+            transition: 0.2s color;
+
+            &:hover:first-child{
+                color: var(--pink-002)
+            }
+
+            & + span {
+                color: var(--pink-001)
+            }
+        }
+    }
 }

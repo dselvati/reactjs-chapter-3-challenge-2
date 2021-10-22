@@ -133,7 +133,8 @@ export const getStaticProps: GetStaticProps = async ({ preview = false,
     //fetch: ['posts.title', 'posts.content'],
     //orderings: ['my.posts.first_publication_date desc'],
     pageSize: 1,
-    ref: previewData?.ref ?? null
+    ref: previewData?.ref ?? null,
+    orderings: '[document.first_publication_date desc]'
   });
 
   //console.log(postsResponse)

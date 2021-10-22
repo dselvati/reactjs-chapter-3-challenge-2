@@ -1,9 +1,14 @@
 import { useEffect } from "react"
 import { useUtterances } from "../../hooks/useUtterances";
 
-const commentNodeId = 'comments';
+// const commentNodeId = 'comments'; 
+//<Link /> mantendo o mesmo container de comentários
 
-export function Comments() {
+interface CommentsProps {
+    commentNodeId: string;
+}
+
+export function Comments({ commentNodeId }: CommentsProps) {
 
     useUtterances(commentNodeId);
 
